@@ -1,0 +1,36 @@
+version: '3.9'
+
+services:
+  mssql:
+    container_name: mssql_container
+    image: mcr.microsoft.com/mssql/server:${MSSQL_VERSION:-2019-latest}
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: ${MSSQL_PRODUCT_ID:-Developer}
+      SA_PASSWORD: "${MSSQL_SA_PASSWORD:-StrongP@ssword}"
+      MSSQL_DB: ${MSSQL_DB:-mssql1}
+      MSSQL_USER: ${MSSQL_USER:-admin}
+      MSSQL_PASSWORD: "${MSSQL_PASSWORD:-P@ssword}"
+      MSSQL_USER_ROLE: "${MSSQL_USER_ROLE:-db_ddladmin}"
+    volumes:
+      - mssqlsystem:/var/opt/mssql
+      - mssqluser:/var/opt/sqlserver
+      - ./mssql/entrypoint.sh:/usr/src/app/entrypoint.sh
+      - ./mssql/sql/:/usr/src/app/docker-entrypoint-initdb.d
+    working_dir: /usr/src/app
+    command: sh -c ' chmod +x ./entrypoint.sh; ./entrypoint.sh & /opt/mssql/bin/sqlservr;'
+    ports:
+      - "${MSSQL_PORT:-1433}:1433"
+    networks:
+      - env_net
+    restart: unless-stopped
+
+networks:
+  env_net:
+    driver: bridge
+
+volumes:
+  mssqlsystem:
+    external: true
+  mssqluser:
+    external: true
