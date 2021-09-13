@@ -1,0 +1,8 @@
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+!.dockerignore
+*.env
+!demo.env
+/*.config
+!/demo.config
+
