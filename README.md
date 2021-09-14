@@ -145,14 +145,70 @@ MSSQL_CONFIG_DIR='<postgres_config_dir>' (./dev.config/mssql, ./prod.config/mssq
 by defualt `./.config/mssql`
 
 ## Add init SQL scripts in Microsoft SQL Server
-All the scripts in `/usr/src/app/docker-entrypoint-initdb.d` will be executed when creating MSSQL volume by alphabetical order so we should create files with prefix.
+
+The `entrypoint.sh` script will load all `*.sql` files to execute. copy file in your own config.
 
 ```
-  volumes:
-      - mssqlsystem:/var/opt/mssql
-      - mssqluser:/var/opt/sqlserver
+#!/bin/bash
+waiting_time=60
+
+# wait for MSSQL server to start
+export STATUS=1
+i=0
+
+sleep $waiting_time/2
+while [[ $STATUS -ne 0 ]] && [[ $i -lt $waiting_time/2 ]];
+do
+	i=$i+1
+	/opt/mssql-tools/bin/sqlcmd -t 1 -U sa -P $SA_PASSWORD -Q "select 1" >> /dev/null
+	STATUS=$?
+done
+
+if [ $STATUS -ne 0 ]; then 
+	echo "======= Error: MSSQL SERVER took more than $waiting_time seconds to start up.  ========";
+	exit 1
+fi
+
+echo "======= MSSQL SERVER STARTED ========"
+# Run the setup scripts by add one or more *.sql in docker-entrypoint-initdb.d
+for filename in ./docker-entrypoint-initdb.d/*.sql; do
+	/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P $SA_PASSWORD -d master -i "$filename";
+done
+
+echo "======= MSSQL CONFIG COMPLETE ======="
+```
+Init the volumes and all the scripts in `/usr/src/app/docker-entrypoint-initdb.d` will be executed when creating MSSQL volume by alphabetical order so we should create files with prefix. When you have more init SQL script then you only create new file with `.sql` extention in folder `${MSSQL_CONFIG_DIR:-./config/mssql}/sql/`.
+
+```
+  ...
+  volumes
+      ...
       - ${MSSQL_CONFIG_DIR:-./config/mssql}/entrypoint.sh:/usr/src/app/entrypoint.sh
       - ${MSSQL_CONFIG_DIR:-./config/mssql}/sql/:/usr/src/app/docker-entrypoint-initdb.d
   working_dir: /usr/src/app
   command: sh -c ' chmod +x ./entrypoint.sh; ./entrypoint.sh & /opt/mssql/bin/sqlservr;'
+  ...
 ```
+# Manage database
+## new connection with Microsoft SQL Server Management Studio:
+* **Server name:** `127.0.0.1,1433`
+* **Login** as `sa`
+* **Password** as `MSSQL_SA_PASSWORD`, by default: `StrongP@ssword`
+* 
+* **Login** as `MSSQL_USER`, by default: `admin`
+* **Password** as `MSSQL_PASSWORD`, by default: `P@ssword`
+* 
+![image](https://user-images.githubusercontent.com/87698179/133215163-1db19a9f-53ea-448a-b10d-ffdc7cda3b7c.png)
+
+
+## create a connection in DBeaver:
+* **Host name/address** `postgres`
+* **Port** as `MSSQL_PORT`, by default: `1433`
+* **Database/Schema:** `MSSQL_DB` , by default: `mssql1`
+* 
+* **Login** as `MSSQL_USER`, by default: `admin`
+* **Password** as `MSSQL_PASSWORD`, by default: `P@ssword`
+* or * **Login** as `sa` and password `MSSQL_SA_PASSWORD`, by default: `StrongP@ssword`
+
+![image](https://user-images.githubusercontent.com/87698179/133215482-3e66b133-c782-4091-999a-6d06197c79f6.png)
+
