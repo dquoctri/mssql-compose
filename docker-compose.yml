@@ -11,8 +11,8 @@ services:
     volumes:
       - mssqlsystem:/var/opt/mssql
       - mssqluser:/var/opt/sqlserver
-      - ${MSSQL_CONFIG_DIR:-./config/mssql}/entrypoint.sh:/usr/src/app/entrypoint.sh
-      - ${MSSQL_CONFIG_DIR:-./config/mssql}/sql/:/usr/src/app/docker-entrypoint-initdb.d
+      - ${MSSQL_CONFIG_DIR:-./.config/mssql}/entrypoint.sh:/usr/src/app/entrypoint.sh
+      - ${MSSQL_CONFIG_DIR:-./.config/mssql}/sql/:/usr/src/app/docker-entrypoint-initdb.d
     working_dir: /usr/src/app
     command: sh -c ' chmod +x ./entrypoint.sh; ./entrypoint.sh & /opt/mssql/bin/sqlservr;'
     ports:
