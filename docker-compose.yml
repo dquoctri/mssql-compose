@@ -1,17 +1,13 @@
 version: '3.9'
 
 services:
-  mssql:
+  mssql_db:
     container_name: mssql_container
-    image: mcr.microsoft.com/mssql/server:${MSSQL_VERSION:-latest}
+    image: ${MSSQL_IMAGE:-mcr.microsoft.com/mssql/server:latest}
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_PID: ${MSSQL_PRODUCT_ID:-Developer}
       SA_PASSWORD: "${MSSQL_SA_PASSWORD:-StrongP@ssword}"
-      MSSQL_DB: ${MSSQL_DB:-mssql1}
-      MSSQL_USER: ${MSSQL_USER:-admin}
-      MSSQL_PASSWORD: "${MSSQL_PASSWORD:-P@ssword}"
-      MSSQL_USER_ROLE: "${MSSQL_USER_ROLE:-db_ddladmin}"
     volumes:
       - mssqlsystem:/var/opt/mssql
       - mssqluser:/var/opt/sqlserver
@@ -31,7 +27,5 @@ networks:
     driver: bridge
 
 volumes:
-  mssqlsystem:
-    # external: true
-  mssqluser:
-    # external: true
+  mssqlsystem: # external: true
+  mssqluser: # external: true

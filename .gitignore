@@ -2,7 +2,7 @@
 
 !.dockerignore
 *.env
-!demo.env
+!.env
 /*.config
-!/demo.config
+!.config
 

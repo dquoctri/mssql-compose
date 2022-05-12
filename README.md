@@ -52,7 +52,7 @@ cd mssql-compose
 The following commands need to be run docker compose:
 
 ```
-docker compose --env-file ./demo.env up -d
+docker compose up -d
 ```
 # Details
 ## Code structure
@@ -67,17 +67,13 @@ Here’s a documentation project structure
 version: '3.9'
 
 services:
-  mssql:
+  mssql_db:
     container_name: mssql_container
-    image: mcr.microsoft.com/mssql/server:${MSSQL_VERSION:-latest}
+    image: ${MSSQL_IMAGE:-mcr.microsoft.com/mssql/server:latest}
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_PID: ${MSSQL_PRODUCT_ID:-Developer}
       SA_PASSWORD: "${MSSQL_SA_PASSWORD:-StrongP@ssword}"
-      MSSQL_DB: ${MSSQL_DB:-mssql1}
-      MSSQL_USER: ${MSSQL_USER:-admin}
-      MSSQL_PASSWORD: "${MSSQL_PASSWORD:-P@ssword}"
-      MSSQL_USER_ROLE: "${MSSQL_USER_ROLE:-db_ddladmin}"
     volumes:
       - mssqlsystem:/var/opt/mssql
       - mssqluser:/var/opt/sqlserver
@@ -97,8 +93,8 @@ networks:
     driver: bridge
 
 volumes:
-  mssqlsystem:
-  mssqluser:
+  mssqlsystem: # external: true
+  mssqluser: # external: true
   
 ```
 
@@ -128,11 +124,6 @@ MSSQL_VERSION=2019-CU12-ubuntu-20.04
 #MSSQL_PRODUCT_ID=Express
 MSSQL_PRODUCT_ID=Developer
 MSSQL_SA_PASSWORD=StrongP@ssword
-
-MSSQL_DB=mssql1
-MSSQL_USER=admin
-MSSQL_PASSWORD=P@ssword
-MSSQL_USER_ROLE=db_ddladmin
 MSSQL_PORT=1433
 
 ```
